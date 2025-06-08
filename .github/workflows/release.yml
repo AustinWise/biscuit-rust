@@ -18,23 +18,49 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-latest
-            target_arch: x86_64-apple-darwin
-            arch: x86_64-macos
-          - os: macos-latest
-            target_arch: aarch64-apple-darwin
-            arch: arm64-macos
-          - os: ubuntu-latest
-            target_arch: x86_64-unknown-linux-gnu
-            arch: x86_64-linux
-          - os: ubuntu-latest
-            target_arch: x86_64-unknown-linux-musl
-            arch: x86_64-linux-musl
-          - os: ubuntu-latest
-            target_arch: aarch64-unknown-linux-gnu
-            arch: arm64-linux
+          # - os: macos-latest
+          #   target_arch: x86_64-apple-darwin
+          #   arch: x86_64-macos
+          # - os: macos-latest
+          #   target_arch: aarch64-apple-darwin
+          #   arch: arm64-macos
+          # - os: ubuntu-latest
+          #   target_arch: x86_64-unknown-linux-gnu
+          #   arch: x86_64-linux
+          # - os: ubuntu-latest
+          #   target_arch: x86_64-unknown-linux-musl
+          #   arch: x86_64-linux-musl
+          # - os: ubuntu-latest
+          #   target_arch: aarch64-unknown-linux-gnu
+          #   arch: arm64-linux
+          - os: windows-latest
+            target_arch: x86_64-pc-windows-msvc
+            arch: x86_64-windows
+          # - os: windows-latest
+          #   target_arch: i686-pc-windows-msvc
+          #   arch: i686-windows
+          # - os: windows-latest
+          #   target_arch: aarch64-pc-windows-msvc
+          #   arch: arm64-windows
 
     steps:
+      - name: Testing stuff
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo $env:PATH
+      - name: Install cargo-c (Windows) - temp
+        if: matrix.os == 'windows-latest'
+        env:
+          LINK: https://github.com/lu-zero/cargo-c/releases/download
+          CARGO_C_FILE: cargo-c-windows-msvc.zip
+          CARGO_C_VERSION: v0.10.11
+        shell: cmd
+        run: |
+          curl -L %LINK%/%CARGO_C_VERSION%/%CARGO_C_FILE% -o %TEMP%\%CARGO_C_FILE%
+          tar xzf %CARGO_C_FILE% -C %USERPROFILE%\.cargo\bin
+          del %TEMP%\%CARGO_C_FILE%
+          where cargo-cinstall.exe
+          exit 1
       - name: Checkout sources
         uses: actions/checkout@v4
       - name: Install musl tools
@@ -59,6 +85,14 @@ jobs:
         env:
           LINK: https://github.com/lu-zero/cargo-c/releases/download
           CARGO_C_FILE: cargo-c-x86_64-unknown-linux-musl.tar.gz
+          CARGO_C_VERSION: v0.10.11
+        run: |
+          curl -L $LINK/$CARGO_C_VERSION/$CARGO_C_FILE | tar xz -C ~/.cargo/bin
+      - name: Install cargo-c (Windows)
+        if: matrix.os == 'windows-latest'
+        env:
+          LINK: https://github.com/lu-zero/cargo-c/releases/download
+          CARGO_C_FILE: cargo-c-windows-msvc.zip
           CARGO_C_VERSION: v0.10.11
         run: |
           curl -L $LINK/$CARGO_C_VERSION/$CARGO_C_FILE | tar xz -C ~/.cargo/bin
